@@ -33,7 +33,7 @@ jobs:
       - name: Check Release
         if: ${{ steps.check_pre_release.outputs.prerelease == 'false' }}
         run: |
-          currentRelease="$(npx semver -i minor ${{ steps.get_latest_release.outputs.tag_name }})"
+          currentRelease="newVersion"
           echo W_RELEASE=v$currentRelease >> $GITHUB_ENV
 
       - name: Get Current Release
