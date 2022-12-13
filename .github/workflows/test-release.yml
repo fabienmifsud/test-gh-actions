@@ -31,24 +31,22 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check Release
-        if: ${{ steps.get_latest_release.outputs.prerelease == 'false' && steps.check_pre_release.outputs.prerelease == 'true' }}
+        if: ${{ steps.check_pre_release.outputs.prerelease == 'false' }}
         run: |
           currentRelease="$(npx semver -i minor ${{ steps.get_latest_release.outputs.tag_name }})"
           echo W_RELEASE=v$currentRelease >> $GITHUB_ENV
 
       - name: Get Current Release
-        if: ${{ env.W_RELEASE != steps.check_pre_release.outputs.tag_name }}
+        if: ${{ steps.check_pre_release.outputs.prerelease == 'false' }}
         run: |
-          currentRelease="$(npx semver -i minor ${{ steps.get_latest_release.outputs.tag_name }})"
-          echo W_RELEASE=v$currentRelease >> $GITHUB_ENV
           echo "Release created"
 
       - name: Release OK
-        if: ${{ env.W_RELEASE != steps.check_pre_release.outputs.tag_name }}
+        if: ${{ steps.check_pre_release.outputs.prerelease == 'false' }}
         id: slack
         run: echo "Release OK"
 
       - name: Release skipped
-        if: ${{ env.W_RELEASE == steps.check_pre_release.outputs.tag_name }}
+        if: ${{ steps.check_pre_release.outputs.prerelease == 'true' }}
         id: slack_skipped
         run: echo "Release Skipped"
