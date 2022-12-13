@@ -1,0 +1,56 @@
+name: test-release
+
+on: 
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Get Pre-Release
+        id: check_pre_release
+        uses: joutvhu/get-release@v1.0.2
+        with:
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get Release
+        if: ${{ steps.check_pre_release.outputs.prerelease == 'false' }}
+        id: get_latest_release
+        uses: joutvhu/get-release@v1.0.2
+        with:
+          latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check Release
+        if: ${{ steps.get_latest_release.outputs.prerelease == 'false' && steps.check_pre_release.outputs.prerelease == 'true' }}
+        run: |
+          currentRelease="$(npx semver -i minor ${{ steps.get_latest_release.outputs.tag_name }})"
+          echo W_RELEASE=v$currentRelease >> $GITHUB_ENV
+
+      - name: Get Current Release
+        if: ${{ env.W_RELEASE != steps.check_pre_release.outputs.tag_name }}
+        run: |
+          currentRelease="$(npx semver -i minor ${{ steps.get_latest_release.outputs.tag_name }})"
+          echo W_RELEASE=v$currentRelease >> $GITHUB_ENV
+      - uses: "marvinpinto/action-automatic-releases@v1.2.1"
+        with:
+          repo_token: "${{ secrets.GH_TOKEN }}"
+          automatic_release_tag: "${{ env.W_RELEASE }}"
+          prerelease: true
+
+      - name: OK
+        if: ${{ env.W_RELEASE != steps.check_pre_release.outputs.tag_name }}
+        id: slack
+        run: echo "Release OK"
+
+      - name: Skipped
+        if: ${{ env.W_RELEASE == steps.check_pre_release.outputs.tag_name }}
+        id: slack_skipped
+        run: echo "Release Skipped"
