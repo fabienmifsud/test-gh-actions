@@ -16,6 +16,7 @@ jobs:
         uses: joutvhu/get-release@v1.0.2
         with:
           prerelease: true
+          latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -24,6 +25,7 @@ jobs:
         id: get_latest_release
         uses: joutvhu/get-release@v1.0.2
         with:
+          prerelease: false
           latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
