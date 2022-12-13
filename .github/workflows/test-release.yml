@@ -39,11 +39,7 @@ jobs:
         run: |
           currentRelease="$(npx semver -i minor ${{ steps.get_latest_release.outputs.tag_name }})"
           echo W_RELEASE=v$currentRelease >> $GITHUB_ENV
-      - uses: "marvinpinto/action-automatic-releases@v1.2.1"
-        with:
-          repo_token: "${{ secrets.GH_TOKEN }}"
-          automatic_release_tag: "${{ env.W_RELEASE }}"
-          prerelease: true
+          echo "Release created"
 
       - name: OK
         if: ${{ env.W_RELEASE != steps.check_pre_release.outputs.tag_name }}
