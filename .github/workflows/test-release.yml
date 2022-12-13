@@ -11,8 +11,8 @@ jobs:
         with:
           ref: main
 
-      - name: Get Pre-Release
-        id: check_pre_release
+      - name: Get potential Pre-Release
+        id: potential_pre_release
         uses: joutvhu/get-release@v1.0.2
         with:
           prerelease: true
@@ -20,9 +20,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get Release
-        if: ${{ steps.check_pre_release.outputs.prerelease == 'false' }}
-        id: get_latest_release
+      - name: Get Last Release
+        if: ${{ steps.potential_pre_release.outputs.prerelease == 'false' }}
+        id: latest_release
         uses: joutvhu/get-release@v1.0.2
         with:
           prerelease: false
@@ -30,23 +30,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check Release
-        if: ${{ steps.check_pre_release.outputs.prerelease == 'false' }}
+      - name: Create Release
+        if: ${{ steps.potential_pre_release.outputs.prerelease == 'false' }}
         run: |
-          currentRelease="newVersion"
-          echo W_RELEASE=v$currentRelease >> $GITHUB_ENV
+          echo W_RELEASE="NextVersion" >> $GITHUB_ENV
 
-      - name: Get Current Release
-        if: ${{ steps.check_pre_release.outputs.prerelease == 'false' }}
-        run: |
-          echo "Release created"
-
-      - name: Release OK
-        if: ${{ steps.check_pre_release.outputs.prerelease == 'false' }}
+      - name: Send GitHub Action trigger data to Slack workflow
+        if: ${{ steps.potential_pre_release.outputs.prerelease == 'false' }}
         id: slack
-        run: echo "Release OK"
+        run: echo 'release created'
 
-      - name: Release skipped
-        if: ${{ steps.check_pre_release.outputs.prerelease == 'true' }}
+      - name: Send GitHub Action trigger data to Slack workflow - skipped
+        if: ${{ steps.potential_pre_release.outputs.prerelease == 'true' }}
         id: slack_skipped
-        run: echo "Release Skipped"
+        run: echo 'release skipped'
